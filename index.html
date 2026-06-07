@@ -299,7 +299,6 @@
             const rate = calculateDailyRate();
             rateValue.textContent = rate;
             
-            // COSC Status
             const rateNum = parseFloat(rate);
             if (rateNum >= -4 && rateNum <= 6) {
                 coscStatus.textContent = 'Within COSC tolerance';
@@ -310,30 +309,22 @@
             }
         }
 
+        function adjustValue(field, delta) {
+            if (field === 'drift') {
+                drift = Math.round((drift + delta) * 10) / 10;
+                driftValue.value = drift.toFixed(1);
+            } else {
+                duration = Math.max(0, Math.round((duration + delta) * 10) / 10);
+                durationValue.value = duration.toFixed(1);
+            }
+            updateDisplay();
+        }
+
         // Button Handlers
-        document.getElementById('driftDown').addEventListener('click', () => {
-            drift = Math.round((drift - 0.5) * 10) / 10;
-            driftValue.value = drift.toFixed(1);
-            updateDisplay();
-        });
-
-        document.getElementById('driftUp').addEventListener('click', () => {
-            drift = Math.round((drift + 0.5) * 10) / 10;
-            driftValue.value = drift.toFixed(1);
-            updateDisplay();
-        });
-
-        document.getElementById('durationDown').addEventListener('click', () => {
-            duration = Math.max(0, Math.round((duration - 0.5) * 10) / 10);
-            durationValue.value = duration.toFixed(1);
-            updateDisplay();
-        });
-
-        document.getElementById('durationUp').addEventListener('click', () => {
-            duration = Math.round((duration + 0.5) * 10) / 10;
-            durationValue.value = duration.toFixed(1);
-            updateDisplay();
-        });
+        document.getElementById('driftDown').addEventListener('click', () => adjustValue('drift', -0.5));
+        document.getElementById('driftUp').addEventListener('click', () => adjustValue('drift', 0.5));
+        document.getElementById('durationDown').addEventListener('click', () => adjustValue('duration', -0.5));
+        document.getElementById('durationUp').addEventListener('click', () => adjustValue('duration', 0.5));
 
         // Keyboard Support
         document.addEventListener('keydown', (e) => {
@@ -341,24 +332,16 @@
             
             switch(e.key) {
                 case 'ArrowUp':
-                    drift = Math.round((drift + step) * 10) / 10;
-                    driftValue.value = drift.toFixed(1);
-                    updateDisplay();
+                    adjustValue('drift', step);
                     break;
                 case 'ArrowDown':
-                    drift = Math.round((drift - step) * 10) / 10;
-                    driftValue.value = drift.toFixed(1);
-                    updateDisplay();
+                    adjustValue('drift', -step);
                     break;
                 case 'ArrowRight':
-                    duration = Math.round((duration + step) * 10) / 10;
-                    durationValue.value = duration.toFixed(1);
-                    updateDisplay();
+                    adjustValue('duration', step);
                     break;
                 case 'ArrowLeft':
-                    duration = Math.max(0, Math.round((duration - step) * 10) / 10);
-                    durationValue.value = duration.toFixed(1);
-                    updateDisplay();
+                    adjustValue('duration', -step);
                     break;
             }
         });
