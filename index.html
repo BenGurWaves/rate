@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RATE</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -22,464 +23,253 @@
         }
 
         body {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Inter', sans-serif;
             background: var(--obsidian);
             color: var(--optical);
             min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Static Guilloché Texture */
-        .guilloche {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.08;
-            pointer-events: none;
-        }
-
-        /* Counting Loader */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--obsidian);
-            z-index: 9999;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), visibility 1.2s;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-counter {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
-            color: var(--titanium);
-            margin-bottom: 2rem;
-        }
-
-        .loader-line {
-            width: 0;
-            height: 1px;
-            background: var(--titanium);
-            transition: width 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .loader.loaded .loader-line {
-            width: 120px;
         }
 
         /* Main Container */
         .container {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            padding: 4rem 6rem;
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
             opacity: 0;
-            transition: opacity 1.4s ease;
+            transition: opacity 0.6s ease;
         }
 
         .container.visible {
             opacity: 1;
         }
 
-        /* Masthead Frame */
-        .masthead {
-            position: fixed;
-            top: 4rem;
-            left: 6rem;
-            right: 6rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            z-index: 10;
-            pointer-events: none;
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
-        .masthead-left {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.12em;
-            color: var(--titanium-dim);
-            text-transform: uppercase;
-        }
-
-        .masthead-right {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.12em;
-            color: var(--titanium-dim);
-            text-transform: uppercase;
-            text-align: right;
-        }
-
-        /* Main Content */
-        .content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding-top: 8rem;
-        }
-
-        /* Brand Mark */
-        .brand {
-            font-size: clamp(4rem, 12vw, 10rem);
+        .logo {
+            font-size: 2.5rem;
             font-weight: 300;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.3em;
             color: var(--optical);
-            margin-bottom: 6rem;
-            line-height: 0.9;
+            margin-bottom: 0.5rem;
         }
 
-        .brand span {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: var(--titanium);
+            text-transform: uppercase;
         }
 
-        .brand.visible span {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Calculator Section */
+        /* Calculator Card */
         .calculator {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8rem;
-            margin-bottom: 12rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--titanium-dim);
+            border-radius: 12px;
+            padding: 2rem;
         }
 
-        /* Input Column */
-        .input-column {
-            display: flex;
-            flex-direction: column;
-            gap: 4rem;
+        /* Input Group */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            color: var(--titanium);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
         }
 
         .input-row {
             display: flex;
-            align-items: baseline;
-            gap: 2rem;
-            border-bottom: 1px solid var(--titanium-dim);
-            padding-bottom: 1rem;
-            transition: border-color 0.4s ease;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .input-row:hover {
-            border-color: var(--titanium);
-        }
-
-        .input-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.15em;
+        .input-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--titanium-dim);
+            background: transparent;
             color: var(--titanium);
-            text-transform: uppercase;
-            width: 80px;
-        }
-
-        .input-value {
-            font-family: 'Space Mono', monospace;
             font-size: 1.2rem;
-            color: var(--optical);
-            font-variant-numeric: tabular-nums;
             cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .input-value:hover {
-            color: var(--titanium);
-        }
-
-        .input-unit {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.15em;
-            color: var(--titanium-dim);
-            text-transform: uppercase;
-        }
-
-        /* Result Column */
-        .result-column {
+            border-radius: 6px;
+            transition: all 0.2s ease;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
         }
 
+        .input-btn:hover {
+            border-color: var(--optical);
+            color: var(--optical);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-value {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--optical);
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
+
+        .input-unit {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+            width: 40px;
+        }
+
+        /* Result Section */
+        .result {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--titanium-dim);
+            text-align: center;
+        }
+
         .result-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.15em;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
             color: var(--titanium);
             text-transform: uppercase;
-            margin-bottom: 2rem;
+            margin-bottom: 0.75rem;
         }
 
         .result-value {
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: 3rem;
             font-weight: 300;
             color: var(--optical);
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.02em;
             line-height: 1;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .result-unit {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
             color: var(--titanium);
             text-transform: uppercase;
         }
 
-        /* COSC Indicator */
-        .cosc-indicator {
-            margin-top: 3rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .cosc-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.5rem;
-            letter-spacing: 0.12em;
+        .cosc {
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
             color: var(--titanium-dim);
             text-transform: uppercase;
         }
 
-        .cosc-status {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.5rem;
-            letter-spacing: 0.12em;
+        .cosc.within {
+            color: #4CAF50;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
             color: var(--titanium-dim);
             text-transform: uppercase;
         }
 
-        .cosc-status.within {
-            color: var(--optical);
-        }
-
-        /* Register Log */
-        .register {
-            margin-top: 8rem;
-            border-top: 1px solid var(--titanium-dim);
-            padding-top: 3rem;
-        }
-
-        .register-header {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.15em;
+        .footer a {
             color: var(--titanium);
-            text-transform: uppercase;
-            margin-bottom: 2rem;
-        }
-
-        .register-entries {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .register-entry {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--titanium);
-            font-variant-numeric: tabular-nums;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(160, 160, 160, 0.05);
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .register-entry.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .register-entry .rate {
-            color: var(--optical);
-        }
-
-        /* Colophon */
-        .colophon {
-            margin-top: 12rem;
-            padding-top: 3rem;
-            border-top: 1px solid var(--titanium-dim);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .colophon-left {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.5rem;
-            letter-spacing: 0.12em;
-            color: var(--titanium-dim);
-            text-transform: uppercase;
-            line-height: 1.8;
-        }
-
-        .colophon-right {
-            text-align: right;
-        }
-
-        .colophon-link {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.5rem;
-            letter-spacing: 0.12em;
-            color: var(--titanium);
-            text-transform: uppercase;
             text-decoration: none;
-            position: relative;
-            transition: color 0.3s ease;
+            transition: color 0.2s ease;
         }
 
-        .colophon-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--optical);
-            transition: width 0.4s ease;
-        }
-
-        .colophon-link:hover {
+        .footer a:hover {
             color: var(--optical);
-        }
-
-        .colophon-link:hover::after {
-            width: 100%;
         }
 
         /* Mobile Responsive */
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
             .container {
-                padding: 2rem 1.5rem;
+                padding: 1.5rem;
             }
 
-            .masthead {
-                top: 2rem;
-                left: 1.5rem;
-                right: 1.5rem;
+            .logo {
+                font-size: 2rem;
             }
 
-            .content {
-                padding-top: 6rem;
-            }
-
-            .calculator {
-                grid-template-columns: 1fr;
-                gap: 4rem;
-            }
-
-            .brand {
-                margin-bottom: 4rem;
+            .result-value {
+                font-size: 2.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Static Guilloché Texture -->
-    <svg class="guilloche" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-            <pattern id="guillochePattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="10" cy="10" r="8" fill="none" stroke="#A0A0A0" stroke-width="0.1"/>
-                <circle cx="10" cy="10" r="6" fill="none" stroke="#A0A0A0" stroke-width="0.08"/>
-                <circle cx="10" cy="10" r="4" fill="none" stroke="#A0A0A0" stroke-width="0.06"/>
-                <circle cx="10" cy="10" r="2" fill="none" stroke="#A0A0A0" stroke-width="0.04"/>
-            </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#guillochePattern)"/>
-    </svg>
-
-    <!-- Counting Loader -->
-    <div class="loader" id="loader">
-        <div class="loader-counter" id="loaderCounter">00</div>
-        <div class="loader-line"></div>
-    </div>
-
-    <!-- Masthead Frame -->
-    <div class="masthead">
-        <div class="masthead-left">RATE · CALYVENT</div>
-        <div class="masthead-right">MMXXVI</div>
-    </div>
-
-    <!-- Main Container -->
     <div class="container" id="container">
-        <div class="content">
-            <!-- Brand Mark -->
-            <div class="brand" id="brand">
-                <span>R</span><span>A</span><span>T</span><span>E</span>
-            </div>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">RATE</div>
+            <div class="tagline">Precision Drift Calculator</div>
+        </div>
 
-            <!-- Calculator -->
-            <div class="calculator">
-                <!-- Input Column -->
-                <div class="input-column">
-                    <div class="input-row">
-                        <div class="input-label">Drift</div>
-                        <div class="input-value" id="driftValue" title="Click to adjust">0.0</div>
-                        <div class="input-unit">sec</div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-label">Duration</div>
-                        <div class="input-value" id="durationValue" title="Click to adjust">0.0</div>
-                        <div class="input-unit">hrs</div>
-                    </div>
-                </div>
-
-                <!-- Result Column -->
-                <div class="result-column">
-                    <div class="result-label">Daily Rate</div>
-                    <div class="result-value" id="rateValue">0.00</div>
-                    <div class="result-unit">seconds per day</div>
-                    <div class="cosc-indicator">
-                        <div class="cosc-label">COSC Tolerance</div>
-                        <div class="cosc-status" id="coscStatus">—4 / +6</div>
-                    </div>
+        <!-- Calculator Card -->
+        <div class="calculator">
+            <!-- Drift Input -->
+            <div class="input-group">
+                <div class="input-label">Time Drift</div>
+                <div class="input-row">
+                    <button class="input-btn" id="driftDown">−</button>
+                    <input type="text" class="input-value" id="driftValue" value="0.0" readonly>
+                    <button class="input-btn" id="driftUp">+</button>
+                    <div class="input-unit">sec</div>
                 </div>
             </div>
 
-            <!-- Register Log -->
-            <div class="register">
-                <div class="register-header">Register</div>
-                <div class="register-entries" id="registerEntries">
-                    <!-- Entries will be appended here -->
+            <!-- Duration Input -->
+            <div class="input-group">
+                <div class="input-label">Duration</div>
+                <div class="input-row">
+                    <button class="input-btn" id="durationDown">−</button>
+                    <input type="text" class="input-value" id="durationValue" value="0.0" readonly>
+                    <button class="input-btn" id="durationUp">+</button>
+                    <div class="input-unit">hrs</div>
                 </div>
             </div>
 
-            <!-- Colophon -->
-            <div class="colophon">
-                <div class="colophon-left">
-                    Typeset in Cormorant Garamond & Space Mono<br>
-                    Composed at the bench<br>
-                    © MMXXVI
-                </div>
-                <div class="colophon-right">
-                    <a href="https://velocity.calyvent.com" class="colophon-link" target="_blank">velocity.calyvent.com</a>
-                </div>
+            <!-- Result -->
+            <div class="result">
+                <div class="result-label">Daily Rate</div>
+                <div class="result-value" id="rateValue">0.00</div>
+                <div class="result-unit">seconds per day</div>
+                <div class="cosc" id="coscStatus">—4 / +6 COSC</div>
             </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Made by <a href="https://velocity.calyvent.com" target="_blank">Velocity</a>
         </div>
     </div>
 
@@ -487,45 +277,18 @@
         // State
         let drift = 0;
         let duration = 0;
-        let register = [];
-        const MAX_REGISTER_ENTRIES = 5;
 
         // DOM Elements
         const driftValue = document.getElementById('driftValue');
         const durationValue = document.getElementById('durationValue');
         const rateValue = document.getElementById('rateValue');
         const coscStatus = document.getElementById('coscStatus');
-        const registerEntries = document.getElementById('registerEntries');
-        const loader = document.getElementById('loader');
-        const loaderCounter = document.getElementById('loaderCounter');
         const container = document.getElementById('container');
-        const brand = document.getElementById('brand');
 
-        // Counting Loader
-        let count = 0;
-        const counterInterval = setInterval(() => {
-            count++;
-            loaderCounter.textContent = count.toString().padStart(2, '0');
-            if (count >= 99) {
-                clearInterval(counterInterval);
-                loader.classList.add('loaded');
-                setTimeout(() => {
-                    loader.classList.add('hidden');
-                    container.classList.add('visible');
-                    revealBrand();
-                }, 400);
-            }
-        }, 24);
-
-        // Brand Reveal
-        function revealBrand() {
-            const letters = brand.querySelectorAll('span');
-            letters.forEach((letter, index) => {
-                setTimeout(() => {
-                    letter.classList.add('visible');
-                }, index * 80);
-            });
-        }
+        // Show container
+        setTimeout(() => {
+            container.classList.add('visible');
+        }, 100);
 
         // Calculation Engine
         function calculateDailyRate() {
@@ -540,63 +303,38 @@
             // COSC Status
             const rateNum = parseFloat(rate);
             if (rateNum >= -4 && rateNum <= 6) {
-                coscStatus.textContent = 'Within tolerance';
+                coscStatus.textContent = 'Within COSC tolerance';
                 coscStatus.classList.add('within');
             } else {
-                coscStatus.textContent = 'Outside tolerance';
+                coscStatus.textContent = 'Outside COSC tolerance';
                 coscStatus.classList.remove('within');
             }
-
-            // Register
-            if (drift !== 0 && duration !== 0) {
-                addToRegister(drift, duration, rate);
-            }
         }
 
-        function addToRegister(drift, duration, rate) {
-            const entry = { drift, duration, rate, timestamp: Date.now() };
-            
-            if (register.length > 0 && register[0].drift === drift && register[0].duration === duration) {
-                return;
-            }
-            
-            register.unshift(entry);
-            if (register.length > MAX_REGISTER_ENTRIES) {
-                register.pop();
-            }
-            
-            renderRegister();
-        }
-
-        function renderRegister() {
-            registerEntries.innerHTML = '';
-            register.forEach((entry, index) => {
-                const div = document.createElement('div');
-                div.className = 'register-entry';
-                div.innerHTML = `
-                    <span>${entry.drift > 0 ? '+' : ''}${entry.drift}s / ${entry.duration}h</span>
-                    <span class="rate">${entry.rate > 0 ? '+' : ''}${entry.rate} s/d</span>
-                `;
-                registerEntries.appendChild(div);
-                
-                setTimeout(() => div.classList.add('visible'), index * 60);
-            });
-        }
-
-        // Click to Adjust
-        function adjustValue(field, delta) {
-            if (field === 'drift') {
-                drift = Math.round((drift + delta) * 10) / 10;
-                driftValue.textContent = drift.toFixed(1);
-            } else {
-                duration = Math.max(0, Math.round((duration + delta) * 10) / 10);
-                durationValue.textContent = duration.toFixed(1);
-            }
+        // Button Handlers
+        document.getElementById('driftDown').addEventListener('click', () => {
+            drift = Math.round((drift - 0.5) * 10) / 10;
+            driftValue.value = drift.toFixed(1);
             updateDisplay();
-        }
+        });
 
-        driftValue.addEventListener('click', () => adjustValue('drift', 0.5));
-        durationValue.addEventListener('click', () => adjustValue('duration', 0.5));
+        document.getElementById('driftUp').addEventListener('click', () => {
+            drift = Math.round((drift + 0.5) * 10) / 10;
+            driftValue.value = drift.toFixed(1);
+            updateDisplay();
+        });
+
+        document.getElementById('durationDown').addEventListener('click', () => {
+            duration = Math.max(0, Math.round((duration - 0.5) * 10) / 10);
+            durationValue.value = duration.toFixed(1);
+            updateDisplay();
+        });
+
+        document.getElementById('durationUp').addEventListener('click', () => {
+            duration = Math.round((duration + 0.5) * 10) / 10;
+            durationValue.value = duration.toFixed(1);
+            updateDisplay();
+        });
 
         // Keyboard Support
         document.addEventListener('keydown', (e) => {
@@ -604,16 +342,24 @@
             
             switch(e.key) {
                 case 'ArrowUp':
-                    adjustValue('drift', step);
+                    drift = Math.round((drift + step) * 10) / 10;
+                    driftValue.value = drift.toFixed(1);
+                    updateDisplay();
                     break;
                 case 'ArrowDown':
-                    adjustValue('drift', -step);
+                    drift = Math.round((drift - step) * 10) / 10;
+                    driftValue.value = drift.toFixed(1);
+                    updateDisplay();
                     break;
                 case 'ArrowRight':
-                    adjustValue('duration', step);
+                    duration = Math.round((duration + step) * 10) / 10;
+                    durationValue.value = duration.toFixed(1);
+                    updateDisplay();
                     break;
                 case 'ArrowLeft':
-                    adjustValue('duration', -step);
+                    duration = Math.max(0, Math.round((duration - step) * 10) / 10);
+                    durationValue.value = duration.toFixed(1);
+                    updateDisplay();
                     break;
             }
         });
