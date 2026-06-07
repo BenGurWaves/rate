@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RATE — Precision Drift Calculator</title>
+    <title>RATE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -18,60 +18,30 @@
             --obsidian: #080808;
             --titanium: #A0A0A0;
             --optical: #FFFFFF;
-            --titanium-dim: #6A6A6A;
-            --obsidian-light: #121212;
+            --titanium-dim: #4A4A4A;
         }
 
         body {
-            font-family: 'Space Grotesk', 'Akzidenz-Grotesk', sans-serif;
+            font-family: 'Cormorant Garamond', serif;
             background: var(--obsidian);
             color: var(--optical);
-            overflow: hidden;
-            cursor: none;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Custom Cursor */
-        .cursor {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            border: 1px solid var(--titanium);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000;
-            transition: transform 0.15s ease-out, border-color 0.2s ease;
-            mix-blend-mode: difference;
-        }
-
-        .cursor-dot {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: var(--optical);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10001;
-            transition: transform 0.05s ease-out;
-        }
-
-        .cursor.hovering {
-            transform: scale(1.5);
-            border-color: var(--optical);
-        }
-
-        /* Living Texture Background */
-        .texture-canvas {
+        /* Static Guilloché Texture */
+        .guilloche {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
-            opacity: 0.4;
+            opacity: 0.08;
+            pointer-events: none;
         }
 
-        /* Elegant Loader */
+        /* Counting Loader */
         .loader {
             position: fixed;
             top: 0;
@@ -81,9 +51,10 @@
             background: var(--obsidian);
             z-index: 9999;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
+            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), visibility 1.2s;
         }
 
         .loader.hidden {
@@ -91,47 +62,23 @@
             visibility: hidden;
         }
 
-        .loader-mechanism {
-            position: relative;
-            width: 120px;
-            height: 120px;
+        .loader-counter {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: var(--titanium);
+            margin-bottom: 2rem;
         }
 
-        .loader-gear {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2px solid var(--titanium);
-            border-radius: 50%;
-            animation: rotate 2s linear infinite;
-        }
-
-        .loader-gear::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60%;
-            height: 60%;
-            border: 1px solid var(--titanium-dim);
-            border-radius: 50%;
-        }
-
-        .loader-gear::after {
-            content: '';
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 20px;
+        .loader-line {
+            width: 0;
+            height: 1px;
             background: var(--titanium);
+            transition: width 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .loader.loaded .loader-line {
+            width: 120px;
         }
 
         /* Main Container */
@@ -139,345 +86,266 @@
             position: relative;
             z-index: 1;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
+            padding: 4rem 6rem;
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s ease, transform 1s ease;
+            transition: opacity 1.4s ease;
         }
 
-        .container.loaded {
+        .container.visible {
+            opacity: 1;
+        }
+
+        /* Masthead Frame */
+        .masthead {
+            position: fixed;
+            top: 4rem;
+            left: 6rem;
+            right: 6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .masthead-left {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+        }
+
+        .masthead-right {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        /* Main Content */
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 8rem;
+        }
+
+        /* Brand Mark */
+        .brand {
+            font-size: clamp(4rem, 12vw, 10rem);
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            color: var(--optical);
+            margin-bottom: 6rem;
+            line-height: 0.9;
+        }
+
+        .brand span {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .brand.visible span {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Top Bar */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid var(--titanium-dim);
-            margin-bottom: 3rem;
-        }
-
-        .brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.3em;
-            color: var(--optical);
-        }
-
-        .brand .R {
-            display: inline-block;
-            position: relative;
-        }
-
-        .brand .R::after {
-            content: '';
-            position: absolute;
-            right: -2px;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: var(--titanium);
-        }
-
-        .attribution {
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
-            color: var(--titanium);
-            text-transform: uppercase;
-        }
-
-        .attribution a {
-            color: var(--titanium);
-            text-decoration: none;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .attribution a::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--optical);
-            transition: width 0.3s ease;
-        }
-
-        .attribution a:hover {
-            color: var(--optical);
-        }
-
-        .attribution a:hover::after {
-            width: 100%;
-        }
-
-        /* Workspace Grid */
-        .workspace {
+        /* Calculator Section */
+        .calculator {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            flex: 1;
-            align-items: center;
+            gap: 8rem;
+            margin-bottom: 12rem;
         }
 
-        /* Input Panel */
-        .input-panel {
+        /* Input Column */
+        .input-column {
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
+            gap: 4rem;
         }
 
-        .input-group {
-            position: relative;
+        .input-row {
+            display: flex;
+            align-items: baseline;
+            gap: 2rem;
+            border-bottom: 1px solid var(--titanium-dim);
+            padding-bottom: 1rem;
+            transition: border-color 0.4s ease;
+        }
+
+        .input-row:hover {
+            border-color: var(--titanium);
         }
 
         .input-label {
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--titanium);
-            margin-bottom: 0.75rem;
-        }
-
-        .click-adjust {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            border: 1px solid var(--titanium-dim);
-            background: rgba(18, 18, 18, 0.5);
-            transition: border-color 0.3s ease, background 0.3s ease;
-        }
-
-        .click-adjust:hover {
-            border-color: var(--titanium);
-            background: rgba(26, 26, 26, 0.5);
-        }
-
-        .click-adjust.focused {
-            border-color: var(--optical);
-            background: rgba(26, 26, 26, 0.7);
-        }
-
-        .adjust-btn {
-            width: 32px;
-            height: 32px;
-            border: 1px solid var(--titanium-dim);
-            background: transparent;
-            color: var(--titanium);
-            font-size: 1.2rem;
-            cursor: none;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .adjust-btn:hover {
-            border-color: var(--optical);
-            color: var(--optical);
-        }
-
-        .adjust-value {
-            flex: 1;
-            font-size: 2rem;
-            font-weight: 300;
-            color: var(--optical);
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 0.05em;
-        }
-
-        .adjust-unit {
-            font-size: 0.7rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
             letter-spacing: 0.15em;
             color: var(--titanium);
             text-transform: uppercase;
+            width: 80px;
         }
 
-        /* Reset Button */
-        .reset-btn {
-            padding: 1rem 2rem;
-            border: 1px solid var(--titanium-dim);
-            background: transparent;
-            color: var(--titanium);
-            font-size: 0.65rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: none;
-            transition: all 0.3s ease;
-            align-self: flex-start;
-        }
-
-        .reset-btn:hover {
-            border-color: var(--optical);
+        .input-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
             color: var(--optical);
+            font-variant-numeric: tabular-nums;
+            cursor: pointer;
+            transition: color 0.3s ease;
         }
 
-        /* Result Dashboard */
-        .result-dashboard {
+        .input-value:hover {
+            color: var(--titanium);
+        }
+
+        .input-unit {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+        }
+
+        /* Result Column */
+        .result-column {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
-        }
-
-        .result-display {
-            position: relative;
-            padding: 2rem;
-            border: 1px solid var(--titanium-dim);
-            background: rgba(18, 18, 18, 0.3);
+            justify-content: center;
         }
 
         .result-label {
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
             color: var(--titanium);
-            margin-bottom: 1rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
         }
 
         .result-value {
-            font-size: 5rem;
+            font-size: clamp(3rem, 8vw, 6rem);
             font-weight: 300;
             color: var(--optical);
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.02em;
             line-height: 1;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-
-        .result-value.visible {
-            opacity: 1;
-            transform: translateY(0);
+            margin-bottom: 1rem;
         }
 
         .result-unit {
-            font-size: 1rem;
-            color: var(--titanium);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
             letter-spacing: 0.15em;
-            margin-left: 0.5rem;
-        }
-
-        /* Trend Gauge */
-        .gauge-container {
-            position: relative;
-            height: 8px;
-            background: var(--obsidian-light);
-            border: 1px solid var(--titanium-dim);
-            margin-top: 1.5rem;
-        }
-
-        .gauge-bar {
-            position: absolute;
-            height: 100%;
-            background: var(--titanium);
-            transition: width 0.4s ease, background 0.4s ease;
-            width: 50%;
-            left: 0;
-        }
-
-        .gauge-bar.precise {
-            background: var(--optical);
-        }
-
-        .gauge-bar.fast {
-            background: #8B4513;
-        }
-
-        .gauge-bar.slow {
-            background: #1E3A5F;
-        }
-
-        .gauge-markers {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding-top: 0.5rem;
-        }
-
-        .gauge-marker {
-            font-size: 0.5rem;
-            color: var(--titanium-dim);
-            letter-spacing: 0.1em;
-        }
-
-        /* Log Window */
-        .log-window {
-            margin-top: 2rem;
-            border: 1px solid var(--titanium-dim);
-            background: rgba(18, 18, 18, 0.3);
-        }
-
-        .log-header {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--titanium-dim);
-            font-size: 0.6rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
             color: var(--titanium);
+            text-transform: uppercase;
         }
 
-        .log-entries {
-            padding: 1rem;
+        /* COSC Indicator */
+        .cosc-indicator {
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .log-entry {
+        .cosc-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+        }
+
+        .cosc-status {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
+            color: var(--titanium-dim);
+            text-transform: uppercase;
+        }
+
+        .cosc-status.within {
+            color: var(--optical);
+        }
+
+        /* Register Log */
+        .register {
+            margin-top: 8rem;
+            border-top: 1px solid var(--titanium-dim);
+            padding-top: 3rem;
+        }
+
+        .register-header {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            color: var(--titanium);
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .register-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .register-entry {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(160, 160, 160, 0.1);
-            font-size: 0.75rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
             color: var(--titanium);
             font-variant-numeric: tabular-nums;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(160, 160, 160, 0.05);
             opacity: 0;
             transform: translateX(-10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .log-entry.visible {
+        .register-entry.visible {
             opacity: 1;
             transform: translateX(0);
         }
 
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .log-entry .drift {
+        .register-entry .rate {
             color: var(--optical);
         }
 
-        /* Footer */
-        .footer {
-            margin-top: auto;
-            padding-top: 2rem;
+        /* Colophon */
+        .colophon {
+            margin-top: 12rem;
+            padding-top: 3rem;
             border-top: 1px solid var(--titanium-dim);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
         }
 
-        .footer-text {
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
+        .colophon-left {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
             color: var(--titanium-dim);
             text-transform: uppercase;
+            line-height: 1.8;
         }
 
-        .footer-link {
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
+        .colophon-right {
+            text-align: right;
+        }
+
+        .colophon-link {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
             color: var(--titanium);
             text-transform: uppercase;
             text-decoration: none;
@@ -485,7 +353,7 @@
             transition: color 0.3s ease;
         }
 
-        .footer-link::after {
+        .colophon-link::after {
             content: '';
             position: absolute;
             bottom: -2px;
@@ -493,128 +361,125 @@
             width: 0;
             height: 1px;
             background: var(--optical);
-            transition: width 0.3s ease;
+            transition: width 0.4s ease;
         }
 
-        .footer-link:hover {
+        .colophon-link:hover {
             color: var(--optical);
         }
 
-        .footer-link:hover::after {
+        .colophon-link:hover::after {
             width: 100%;
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .workspace {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .result-value {
-                font-size: 3.5rem;
-            }
-
             .container {
-                padding: 1.5rem;
+                padding: 2rem 1.5rem;
             }
 
-            .cursor, .cursor-dot {
-                display: none;
+            .masthead {
+                top: 2rem;
+                left: 1.5rem;
+                right: 1.5rem;
             }
 
-            body {
-                cursor: auto;
+            .content {
+                padding-top: 6rem;
             }
 
-            .adjust-btn, .reset-btn {
-                cursor: pointer;
+            .calculator {
+                grid-template-columns: 1fr;
+                gap: 4rem;
+            }
+
+            .brand {
+                margin-bottom: 4rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Living Texture Canvas -->
-    <canvas class="texture-canvas" id="textureCanvas"></canvas>
+    <!-- Static Guilloché Texture -->
+    <svg class="guilloche" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+            <pattern id="guillochePattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="10" cy="10" r="8" fill="none" stroke="#A0A0A0" stroke-width="0.1"/>
+                <circle cx="10" cy="10" r="6" fill="none" stroke="#A0A0A0" stroke-width="0.08"/>
+                <circle cx="10" cy="10" r="4" fill="none" stroke="#A0A0A0" stroke-width="0.06"/>
+                <circle cx="10" cy="10" r="2" fill="none" stroke="#A0A0A0" stroke-width="0.04"/>
+            </pattern>
+        </defs>
+        <rect width="100" height="100" fill="url(#guillochePattern)"/>
+    </svg>
 
-    <!-- Custom Cursor -->
-    <div class="cursor" id="cursor"></div>
-    <div class="cursor-dot" id="cursorDot"></div>
-
-    <!-- Elegant Loader -->
+    <!-- Counting Loader -->
     <div class="loader" id="loader">
-        <div class="loader-mechanism">
-            <div class="loader-gear"></div>
-        </div>
+        <div class="loader-counter" id="loaderCounter">00</div>
+        <div class="loader-line"></div>
+    </div>
+
+    <!-- Masthead Frame -->
+    <div class="masthead">
+        <div class="masthead-left">RATE · CALYVENT</div>
+        <div class="masthead-right">MMXXVI</div>
     </div>
 
     <!-- Main Container -->
     <div class="container" id="container">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="brand">RATE</div>
-            <div class="attribution">
-                Made by <a href="https://velocity.calyvent.com" target="_blank">Velocity</a>
+        <div class="content">
+            <!-- Brand Mark -->
+            <div class="brand" id="brand">
+                <span>R</span><span>A</span><span>T</span><span>E</span>
             </div>
-        </div>
 
-        <!-- Workspace -->
-        <div class="workspace">
-            <!-- Input Panel -->
-            <div class="input-panel">
-                <div class="input-group">
-                    <div class="input-label">Time Drift</div>
-                    <div class="click-adjust" id="driftAdjust">
-                        <button class="adjust-btn" data-action="decrease" data-field="drift">−</button>
-                        <div class="adjust-value" id="driftValue">0.0</div>
-                        <button class="adjust-btn" data-action="increase" data-field="drift">+</button>
-                        <div class="adjust-unit">sec</div>
+            <!-- Calculator -->
+            <div class="calculator">
+                <!-- Input Column -->
+                <div class="input-column">
+                    <div class="input-row">
+                        <div class="input-label">Drift</div>
+                        <div class="input-value" id="driftValue" title="Click to adjust">0.0</div>
+                        <div class="input-unit">sec</div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-label">Duration</div>
+                        <div class="input-value" id="durationValue" title="Click to adjust">0.0</div>
+                        <div class="input-unit">hrs</div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <div class="input-label">Duration</div>
-                    <div class="click-adjust" id="durationAdjust">
-                        <button class="adjust-btn" data-action="decrease" data-field="duration">−</button>
-                        <div class="adjust-value" id="durationValue">0.0</div>
-                        <button class="adjust-btn" data-action="increase" data-field="duration">+</button>
-                        <div class="adjust-unit">hrs</div>
-                    </div>
-                </div>
-
-                <button class="reset-btn" id="resetBtn">Reset</button>
-            </div>
-
-            <!-- Result Dashboard -->
-            <div class="result-dashboard">
-                <div class="result-display">
+                <!-- Result Column -->
+                <div class="result-column">
                     <div class="result-label">Daily Rate</div>
-                    <div class="result-value" id="resultValue">
-                        <span id="rateValue">0.00</span><span class="result-unit">s/d</span>
-                    </div>
-                    <div class="gauge-container">
-                        <div class="gauge-bar" id="gaugeBar"></div>
-                        <div class="gauge-markers">
-                            <span class="gauge-marker">-4</span>
-                            <span class="gauge-marker">0</span>
-                            <span class="gauge-marker">+6</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="log-window">
-                    <div class="log-header">Recent Calculations</div>
-                    <div class="log-entries" id="logEntries">
-                        <!-- Log entries will be appended here -->
+                    <div class="result-value" id="rateValue">0.00</div>
+                    <div class="result-unit">seconds per day</div>
+                    <div class="cosc-indicator">
+                        <div class="cosc-label">COSC Tolerance</div>
+                        <div class="cosc-status" id="coscStatus">—4 / +6</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-text">Precision Instrument</div>
-            <a href="https://velocity.calyvent.com" class="footer-link" target="_blank">velocity.calyvent.com</a>
+            <!-- Register Log -->
+            <div class="register">
+                <div class="register-header">Register</div>
+                <div class="register-entries" id="registerEntries">
+                    <!-- Entries will be appended here -->
+                </div>
+            </div>
+
+            <!-- Colophon -->
+            <div class="colophon">
+                <div class="colophon-left">
+                    Typeset in Cormorant Garamond & Space Mono<br>
+                    Composed at the bench<br>
+                    © MMXXVI
+                </div>
+                <div class="colophon-right">
+                    <a href="https://velocity.calyvent.com" class="colophon-link" target="_blank">velocity.calyvent.com</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -622,86 +487,45 @@
         // State
         let drift = 0;
         let duration = 0;
-        let log = [];
-        const MAX_LOG_ENTRIES = 5;
+        let register = [];
+        const MAX_REGISTER_ENTRIES = 5;
 
         // DOM Elements
         const driftValue = document.getElementById('driftValue');
         const durationValue = document.getElementById('durationValue');
         const rateValue = document.getElementById('rateValue');
-        const resultValue = document.getElementById('resultValue');
-        const gaugeBar = document.getElementById('gaugeBar');
-        const logEntries = document.getElementById('logEntries');
-        const resetBtn = document.getElementById('resetBtn');
+        const coscStatus = document.getElementById('coscStatus');
+        const registerEntries = document.getElementById('registerEntries');
         const loader = document.getElementById('loader');
+        const loaderCounter = document.getElementById('loaderCounter');
         const container = document.getElementById('container');
-        const cursor = document.getElementById('cursor');
-        const cursorDot = document.getElementById('cursorDot');
-        const textureCanvas = document.getElementById('textureCanvas');
+        const brand = document.getElementById('brand');
 
-        // Custom Cursor
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX - 10 + 'px';
-            cursor.style.top = e.clientY - 10 + 'px';
-            cursorDot.style.left = e.clientX - 2 + 'px';
-            cursorDot.style.top = e.clientY - 2 + 'px';
-        });
-
-        // Cursor hover effects
-        document.querySelectorAll('button, a').forEach(el => {
-            el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
-            el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
-        });
-
-        // Living Texture
-        const ctx = textureCanvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            textureCanvas.width = window.innerWidth;
-            textureCanvas.height = window.innerHeight;
-            initParticles();
-        }
-
-        function initParticles() {
-            particles = [];
-            const particleCount = Math.floor((textureCanvas.width * textureCanvas.height) / 15000);
-            for (let i = 0; i < particleCount; i++) {
-                particles.push({
-                    x: Math.random() * textureCanvas.width,
-                    y: Math.random() * textureCanvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    speedX: (Math.random() - 0.5) * 0.3,
-                    speedY: (Math.random() - 0.5) * 0.3,
-                    opacity: Math.random() * 0.3 + 0.1
-                });
+        // Counting Loader
+        let count = 0;
+        const counterInterval = setInterval(() => {
+            count++;
+            loaderCounter.textContent = count.toString().padStart(2, '0');
+            if (count >= 99) {
+                clearInterval(counterInterval);
+                loader.classList.add('loaded');
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    container.classList.add('visible');
+                    revealBrand();
+                }, 400);
             }
-        }
+        }, 24);
 
-        function animateTexture() {
-            ctx.clearRect(0, 0, textureCanvas.width, textureCanvas.height);
-            
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-
-                if (p.x < 0) p.x = textureCanvas.width;
-                if (p.x > textureCanvas.width) p.x = 0;
-                if (p.y < 0) p.y = textureCanvas.height;
-                if (p.y > textureCanvas.height) p.y = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(160, 160, 160, ${p.opacity})`;
-                ctx.fill();
+        // Brand Reveal
+        function revealBrand() {
+            const letters = brand.querySelectorAll('span');
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    letter.classList.add('visible');
+                }, index * 80);
             });
-
-            requestAnimationFrame(animateTexture);
         }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        animateTexture();
 
         // Calculation Engine
         function calculateDailyRate() {
@@ -711,148 +535,87 @@
 
         function updateDisplay() {
             const rate = calculateDailyRate();
+            rateValue.textContent = rate;
             
-            // Poetic transition for result
-            resultValue.classList.remove('visible');
-            setTimeout(() => {
-                rateValue.textContent = rate;
-                resultValue.classList.add('visible');
-            }, 100);
-
-            // Update gauge
-            updateGauge(parseFloat(rate));
-
-            // Log if both values are non-zero
-            if (drift !== 0 && duration !== 0) {
-                addToLog(drift, duration, rate);
-            }
-        }
-
-        function updateGauge(rate) {
-            const minRate = -4;
-            const maxRate = 6;
-            const range = maxRate - minRate;
-            
-            let percentage = ((rate - minRate) / range) * 100;
-            percentage = Math.max(0, Math.min(100, percentage));
-            
-            gaugeBar.style.width = percentage + '%';
-            
-            // Color coding
-            gaugeBar.classList.remove('precise', 'fast', 'slow');
-            if (rate >= -4 && rate <= 6) {
-                gaugeBar.classList.add('precise');
-            } else if (rate > 6) {
-                gaugeBar.classList.add('fast');
+            // COSC Status
+            const rateNum = parseFloat(rate);
+            if (rateNum >= -4 && rateNum <= 6) {
+                coscStatus.textContent = 'Within tolerance';
+                coscStatus.classList.add('within');
             } else {
-                gaugeBar.classList.add('slow');
+                coscStatus.textContent = 'Outside tolerance';
+                coscStatus.classList.remove('within');
+            }
+
+            // Register
+            if (drift !== 0 && duration !== 0) {
+                addToRegister(drift, duration, rate);
             }
         }
 
-        function addToLog(drift, duration, rate) {
+        function addToRegister(drift, duration, rate) {
             const entry = { drift, duration, rate, timestamp: Date.now() };
             
-            // Avoid duplicate consecutive entries
-            if (log.length > 0 && log[0].drift === drift && log[0].duration === duration) {
+            if (register.length > 0 && register[0].drift === drift && register[0].duration === duration) {
                 return;
             }
             
-            log.unshift(entry);
-            if (log.length > MAX_LOG_ENTRIES) {
-                log.pop();
+            register.unshift(entry);
+            if (register.length > MAX_REGISTER_ENTRIES) {
+                register.pop();
             }
             
-            renderLog();
+            renderRegister();
         }
 
-        function renderLog() {
-            logEntries.innerHTML = '';
-            log.forEach((entry, index) => {
+        function renderRegister() {
+            registerEntries.innerHTML = '';
+            register.forEach((entry, index) => {
                 const div = document.createElement('div');
-                div.className = 'log-entry';
+                div.className = 'register-entry';
                 div.innerHTML = `
                     <span>${entry.drift > 0 ? '+' : ''}${entry.drift}s / ${entry.duration}h</span>
-                    <span class="drift">${entry.rate > 0 ? '+' : ''}${entry.rate} s/d</span>
+                    <span class="rate">${entry.rate > 0 ? '+' : ''}${entry.rate} s/d</span>
                 `;
-                logEntries.appendChild(div);
+                registerEntries.appendChild(div);
                 
-                // Staggered animation
-                setTimeout(() => div.classList.add('visible'), index * 50);
+                setTimeout(() => div.classList.add('visible'), index * 60);
             });
         }
 
-        // Click-to-Adjust
-        document.querySelectorAll('.adjust-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.dataset.action;
-                const field = btn.dataset.field;
-                const step = field === 'drift' ? 0.5 : 0.5;
-                
-                if (field === 'drift') {
-                    drift = action === 'increase' ? drift + step : drift - step;
-                    drift = Math.round(drift * 10) / 10;
-                    driftValue.textContent = drift.toFixed(1);
-                } else {
-                    duration = action === 'increase' ? duration + step : duration - step;
-                    duration = Math.max(0, Math.round(duration * 10) / 10);
-                    durationValue.textContent = duration.toFixed(1);
-                }
-                
-                updateDisplay();
-            });
-        });
-
-        // Reset
-        resetBtn.addEventListener('click', () => {
-            drift = 0;
-            duration = 0;
-            driftValue.textContent = '0.0';
-            durationValue.textContent = '0.0';
-            log = [];
-            renderLog();
+        // Click to Adjust
+        function adjustValue(field, delta) {
+            if (field === 'drift') {
+                drift = Math.round((drift + delta) * 10) / 10;
+                driftValue.textContent = drift.toFixed(1);
+            } else {
+                duration = Math.max(0, Math.round((duration + delta) * 10) / 10);
+                durationValue.textContent = duration.toFixed(1);
+            }
             updateDisplay();
-        });
+        }
 
-        // Keyboard support
+        driftValue.addEventListener('click', () => adjustValue('drift', 0.5));
+        durationValue.addEventListener('click', () => adjustValue('duration', 0.5));
+
+        // Keyboard Support
         document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT') return;
-            
             const step = e.shiftKey ? 1 : 0.5;
             
             switch(e.key) {
                 case 'ArrowUp':
-                    drift += step;
-                    drift = Math.round(drift * 10) / 10;
-                    driftValue.textContent = drift.toFixed(1);
-                    updateDisplay();
+                    adjustValue('drift', step);
                     break;
                 case 'ArrowDown':
-                    drift -= step;
-                    drift = Math.round(drift * 10) / 10;
-                    driftValue.textContent = drift.toFixed(1);
-                    updateDisplay();
+                    adjustValue('drift', -step);
                     break;
                 case 'ArrowRight':
-                    duration += step;
-                    duration = Math.max(0, Math.round(duration * 10) / 10);
-                    durationValue.textContent = duration.toFixed(1);
-                    updateDisplay();
+                    adjustValue('duration', step);
                     break;
                 case 'ArrowLeft':
-                    duration -= step;
-                    duration = Math.max(0, Math.round(duration * 10) / 10);
-                    durationValue.textContent = duration.toFixed(1);
-                    updateDisplay();
+                    adjustValue('duration', -step);
                     break;
             }
-        });
-
-        // Initialize
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                loader.classList.add('hidden');
-                container.classList.add('loaded');
-            }, 1500);
         });
     </script>
 </body>
